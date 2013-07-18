@@ -1,0 +1,8 @@
+name = "Section Title"
+description = "Creates a configurable block for identifying the site section based on the current path."
+core = 7.x
+package = Other
+
+; Use the String Overrides module for providing an interface to manage the
+; section naming through.
+dependencies[] = stringoverrides

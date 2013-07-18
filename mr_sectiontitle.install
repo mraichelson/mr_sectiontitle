@@ -1,0 +1,36 @@
+<?php
+/**
+ * @file 
+ */
+
+/**
+ * Implements hook_install().
+ */
+function mr_sectiontitle_install() {
+  // Insert default system var values.
+  foreach (_mr_sectiontitle_config() as $key => $value) {
+    variable_set($key, $value);
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function mr_sectiontitle_uninstall() {
+  // Remove system vars.
+  foreach (_mr_sectiontitle_config() as $key => $value) {
+    variable_del($key);
+  }
+}
+
+/**
+ * Helper function for providing the default system config variables.
+ */
+function _mr_sectiontitle_config() {
+  $defaults = array(
+    'mr_sectiontitle_element' => 'h1',
+    'mr_sectiontitle_front'   => 0,
+    'mr_sectiontitle_id'      => 'section-title',
+  );
+  return $defaults;
+}

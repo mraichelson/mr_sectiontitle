@@ -1,0 +1,162 @@
+<?php
+/**
+ * @file
+ * MR Section Title module file.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function mr_sectiontitle_menu() {
+  $items['admin/config/system/sectiontitle'] = array(
+    'title'            => 'Section Titles',
+    'description'      => 'Control settings for the Section Title module.',
+    'page callback'    => '_mr_sectiontitle_form_page',
+    'access arguments' => array('administer mr_sectiontitle'),
+    'weight'           => 10,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function mr_sectiontitle_permission() {
+  return array(
+    'administer mr_sectiontitle' =>  array(
+      'title'       => t('Administer Section Title'),
+      'description' => t('Adjust settings for the Section Title module.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function mr_sectiontitle_block_info() {
+  $blocks['mr_sectiontitle'] = array(
+    'info' => t('Section Title'),
+    'cache' => DRUPAL_CACHE_PER_PAGE,
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function mr_sectiontitle_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'mr_sectiontitle':
+      $block['subject'] = FALSE;
+      $block['content'] = _mr_sectiontitle_block_text();
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Helper function for assembling the content of the section title block.
+ */
+function _mr_sectiontitle_block_text() {
+  $element = variable_get('mr_sectiontitle_element');
+  $is_block = TRUE;
+  $is_id = trim(variable_get('mr_sectiontitle_id'));
+  if (drupal_is_front_page() && !variable_get('mr_sectiontitle_front')) {
+    $is_block = FALSE;
+  }
+  if ($is_block) {
+    if (!stristr(drupal_get_http_header("status"), '404') && !stristr(drupal_get_http_header("status"), '403')) {
+      $path = explode('/', request_path());
+      $section_text = $path[0];
+      if (drupal_is_front_page()) {
+        $section_text = '[front]';
+      }
+    }
+    else {
+      $section_text = 'error';
+      if (stristr(drupal_get_http_header("status"), '404')) {
+        $section_text = '404';
+      }
+      if (stristr(drupal_get_http_header("status"), '403')) {
+        $section_text = '403';
+      }
+    }
+    $markup   = array();
+    $markup[] = '<' . $element;
+    if ($is_id) {
+      $markup[] = ' id="' . $is_id . '"';
+    }
+    $markup[] = '>';
+    $markup[] = t('section:' . $section_text);
+    $markup[] = '</' . $element . '>';
+    return implode($markup);
+  }
+  else {
+    return false;
+  }
+}
+
+/**
+ * ===== Admin and configuration screens =====
+ */
+function mr_sectiontitle_form($form, &$form_state) {
+  $form = array();
+  $form['mr_sectiontitle_element'] = array(
+    '#type' => 'select',
+    '#title' => t('HTML Element'),
+    '#options' => _mr_sectiontitle_html_elements(),
+    '#description' => t('If the HTML5 <code>header</code> element is selected some additional JS support may be required as part of the site theme to support older versions of Internet Explorer.'),
+    '#default_value' => variable_get('mr_sectiontitle_element'),
+    '#id' => 'mr-sectiontitle-element',
+  );
+  $form['mr_sectiontitle_id'] = array(
+    '#type' => 'textfield',
+    '#title' => t('HTML Element ID'),
+    '#description' => t('This ID will be applied to the section title HTML element.'),
+    '#default_value' => variable_get('mr_sectiontitle_id'),
+    '#id' => 'mr-sectiontitle-id',
+  );
+  $form['mr_sectiontitle_front'] = array(
+    '#type' => 'select',
+    '#title' => t('Create homepage section title block?'),
+    '#options' => array(
+      0 => 'No',
+      1 => 'Yes',
+    ),
+    '#description' => t('Should there be a section title block on the homepage of the site?'),
+    '#default_value' => variable_get('mr_sectiontitle_front'),
+    '#id' => 'mr-sectiontitle-front',
+  );
+  $form['mr_sectiontitle_submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save Settings'),
+    '#id' => 'mr-sectiontitle-submit',
+  );
+  $admin_link = l('string overrides', 'admin/config/regional/stringoverrides');
+  $form['mr_sectiontitle_text'] = array(
+    '#markup' => '<p>The text for section titles can be managed from the ' . $admin_link . ' page.</p>',
+  );
+  return $form;
+}
+function mr_sectiontitle_form_submit($form, &$form_state) {
+  variable_set('mr_sectiontitle_element', $form_state['values']['mr_sectiontitle_element']);
+  variable_set('mr_sectiontitle_id',      $form_state['values']['mr_sectiontitle_id']);
+  variable_set('mr_sectiontitle_front',   $form_state['values']['mr_sectiontitle_front']);
+  drupal_set_message(t('Settings have been saved.'), 'status');
+}
+function _mr_sectiontitle_form_page() {
+  return drupal_render(drupal_get_form('mr_sectiontitle_form'));
+}
+function _mr_sectiontitle_html_elements() {
+  return array(
+    'h1'     => 'H1',
+    'h2'     => 'H2',
+    'h3'     => 'H3',
+    'h4'     => 'H4',
+    'h5'     => 'H5',
+    'h6'     => 'H6',
+    'header' => 'Header',
+    'div'    => 'DIV',
+  );
+}
