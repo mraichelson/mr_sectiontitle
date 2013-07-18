@@ -9,4 +9,4 @@ There is example code in template.example.php for how to provide an optional fie
 to set the section title on a page-specific basis.
 
 * [Michael Raichelson](http://michaelraichelson.com/)
-* [Github Repo]()
+* [Github Repo](https://github.com/mraichelson/mr_sectiontitle)
